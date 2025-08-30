@@ -1,0 +1,83 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <title>Confession</title>
+  <style>
+    body {
+      font-family: Arial, sans-serif;
+      background: white;
+      color: #d6336c;
+      display: flex;
+      justify-content: center;
+      align-items: center;
+      height: 100vh;
+      text-align: center;
+      flex-direction: column;
+    }
+    .btn {
+      background: #d6336c;
+      color: white;
+      border: none;
+      padding: 10px 20px;
+      border-radius: 20px;
+      cursor: pointer;
+      font-size: 16px;
+      margin-top: 20px;
+    }
+    .line {
+      font-size: 18px;
+      margin-top: 12px;
+      opacity: 0;
+      transition: opacity 1s;
+    }
+    .show {
+      opacity: 1;
+    }
+    .final {
+      font-size: 22px;
+      font-weight: bold;
+      margin-top: 20px;
+      white-space: pre-wrap;
+    }
+  </style>
+</head>
+<body>
+  <div id="confession">
+    <p id="intro"></p>
+    <button id="startBtn" class="btn">Click me ❤️</button>
+    <div id="lines"></div>
+    <p id="final" class="final"></p>
+    <button id="replayBtn" class="btn" style="display:none;">Replay 🔁</button>
+  </div>
+
+  <script>
+    // Read URL parameters
+    const params = new URLSearchParams(window.location.search);
+    const introText = params.get('intro') || 'Hi, I have something to tell you 👀';
+    const finalMsg = params.get('final') || 'I like you so much 💌';
+    const color = params.get('color') || '#d6336c';
+    const lines = params.get('lines') ? params.get('lines').split('|') : [];
+
+    document.getElementById('intro').textContent = introText;
+    document.body.style.color = color;
+
+    const linesContainer = document.getElementById('lines');
+    lines.forEach((line, idx) => {
+      if(line) {
+        const p = document.createElement('p');
+        p.className = 'line';
+        p.id = 'line' + (idx + 1);
+        p.textContent = decodeURIComponent(line);
+        linesContainer.appendChild(p);
+      }
+    });
+
+    // Animation & Replay
+    let index = 0;
+    const startBtn = document.getElementById('startBtn');
+    const replayBtn = document.getElementById('replayBtn');
+    const finalElement = document.getElementById('final');
+
+    startBtn.addEventListener('click', () => {
+      startBtn.style.display = 'none';
