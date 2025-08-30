@@ -1,0 +1,157 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <title>Confession Editor</title>
+  <style>
+    body { font-family: Arial, sans-serif; background: #f9f9f9; padding: 20px; }
+    h2 { color: #d6336c; }
+    .editor { background: white; padding: 20px; border-radius: 10px; max-width: 600px; margin: auto; }
+    .input-group { margin-bottom: 10px; display: flex; gap: 10px; align-items: center; }
+    label { flex: 0 0 100px; font-size: 14px; }
+    textarea, input { flex: 1; padding: 6px; font-size: 14px; }
+    button { background: #d6336c; color: white; border: none; padding: 8px 14px; 
+             border-radius: 6px; cursor: pointer; font-size: 14px; }
+    button:hover { background: #a3224a; }
+    .line-field { display: flex; gap: 10px; margin-bottom: 8px; }
+    .line-field input { flex: 1; }
+    .remove-btn { background: gray; }
+  </style>
+</head>
+<body>
+  <div class="editor">
+    <h2>Confession Editor 💌</h2>
+    <div class="input-group">
+      <label>Intro:</label>
+      <input type="text" id="intro" placeholder="Hi, I have something to tell you...">
+    </div>
+
+    <div id="lines-container">
+      <div class="line-field">
+        <input type="text" placeholder="Enter a line..." />
+        <button type="button" class="remove-btn" onclick="removeLine(this)">✖</button>
+      </div>
+    </div>
+    <button type="button" onclick="addLine()">+ Add Line</button>
+
+    <div class="input-group">
+      <label>Final:</label>
+      <textarea id="final" rows="2" placeholder="I like you so much 💕"></textarea>
+    </div>
+
+    <div class="input-group">
+      <label>Text Color:</label>
+      <input type="color" id="color" value="#d6336c">
+    </div>
+
+    <button onclick="generateFile()">Export HTML</button>
+  </div>
+
+  <script>
+    function addLine() {
+      const container = document.getElementById("lines-container");
+      const div = document.createElement("div");
+      div.className = "line-field";
+      div.innerHTML = `
+        <input type="text" placeholder="Enter a line..." />
+        <button type="button" class="remove-btn" onclick="removeLine(this)">✖</button>
+      `;
+      container.appendChild(div);
+    }
+
+    function removeLine(btn) {
+      btn.parentElement.remove();
+    }
+
+    function generateFile() {
+      const intro = document.getElementById("intro").value || "Hi, I have something to tell you 👀";
+      const finalMsg = document.getElementById("final").value || "I like you so much 💌";
+      const color = document.getElementById("color").value || "#d6336c";
+
+      const lineInputs = document.querySelectorAll("#lines-container input");
+      let linesHTML = "";
+      lineInputs.forEach((input, idx) => {
+        if (input.value.trim() !== "") {
+          linesHTML += `<p id="line${idx+1}" class="line">${input.value}</p>\n`;
+        }
+      });
+
+      const content = `<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <title>Confession</title>
+  <style>
+    body { font-family: Arial, sans-serif; background: white; color: ${color};
+           display: flex; justify-content: center; align-items: center;
+           height: 100vh; text-align: center; flex-direction: column; }
+    .btn { background: ${color}; color: white; border: none; padding: 10px 20px;
+           border-radius: 20px; cursor: pointer; font-size: 16px; margin-top: 20px; }
+    .line { font-size: 18px; margin-top: 12px; opacity: 0; transition: opacity 1s; }
+    .show { opacity: 1; }
+    .final { font-size: 22px; font-weight: bold; margin-top: 20px; white-space: pre-wrap; }
+  </style>
+</head>
+<body>
+  <div id="confession">
+    <p id="intro">${intro}</p>
+    <button id="startBtn" class="btn">Click me ❤️</button>
+
+    ${linesHTML}
+    <p id="final" class="final"></p>
+    <button id="replayBtn" class="btn" style="display:none;">Replay 🔁</button>
+  </div>
+
+  <script>
+    const startBtn = document.getElementById("startBtn");
+    const replayBtn = document.getElementById("replayBtn");
+    const lines = Array.from(document.querySelectorAll(".line"));
+    const final = document.getElementById("final");
+    const finalMessage = "${finalMsg}";
+    let index = 0;
+
+    startBtn.addEventListener("click", () => playConfession());
+
+    replayBtn.addEventListener("click", () => {
+      // reset
+      lines.forEach(line => line.classList.remove("show"));
+      final.textContent = "";
+      index = 0;
+      replayBtn.style.display = "none";
+      startBtn.style.display = "inline-block";
+    });
+
+    function playConfession() {
+      startBtn.style.display = "none";
+      let delay = 500;
+      lines.forEach((line, i) => {
+        setTimeout(() => line.classList.add("show"), delay);
+        delay += 1500;
+      });
+      setTimeout(() => typeWriter(), delay + 500);
+    }
+
+    function typeWriter() {
+      if (index < finalMessage.length) {
+        final.textContent += finalMessage.charAt(index);
+        index++;
+        setTimeout(typeWriter, 80);
+      } else {
+        replayBtn.style.display = "inline-block";
+      }
+    }
+  <\/script>
+</body>
+</html>`;
+
+      const blob = new Blob([content], { type: "text/html" });
+      const link = document.createElement("a");
+      link.href = URL.createObjectURL(blob);
+      link.download = "confession_final.html";
+      document.body.appendChild(link);
+      link.click();
+      document.body.removeChild(link);
+    }
+  </script>
+</body>
+</html>
